@@ -1,0 +1,194 @@
+// server.js
+
+const express = require("express");
+const app = express();
+// This is your test secret API key.
+const Stripe = require("stripe");
+const stripe = Stripe('sk_test_51QTPvkLBjn9Sr3YQmYI5N2R65DEmt4KpsGT0Wp4l4zb4q0rsmE7TfXPlKyhletc8MnORpLCBvEjZLp2YHHNec4bu00KCu8OMkK');
+const OnrampSessionResource = Stripe.StripeResource.extend({
+  create: Stripe.StripeResource.method({
+    method: 'POST',
+    path: 'crypto/onramp_sessions',
+  }),
+});
+
+
+app.use(express.static("public"));
+app.use(express.json());
+
+app.post("/create-onramp-session", async (req, res) => {
+  const { transaction_details } = req.body;
+
+  // Create an OnrampSession with the order amount and currency
+  const onrampSession = await new OnrampSessionResource(stripe).create({
+    transaction_details: {
+      destination_currency: transaction_details["destination_currency"],
+      destination_exchange_amount: transaction_details["destination_exchange_amount"],
+      destination_network: transaction_details["destination_network"],
+    },
+    customer_ip_address: req.socket.remoteAddress,
+  });
+
+  res.send({
+    clientSecret: onrampSession.client_secret,
+  });
+});
+
+app.listen(4242, () => console.log("Node server listening on port 4242!"));
+
+
+//App.jsx
+import React, { useState, useEffect } from "react";
+import { loadStripeOnramp } from "@stripe/crypto";
+
+import { CryptoElements, OnrampElement } from './StripeCryptoElements';
+import "./App.css";
+
+// Make sure to call loadStripeOnramp outside of a component’s render to avoid
+// recreating the StripeOnramp object on every render.
+// This is your test publishable API key.
+const stripeOnrampPromise = loadStripeOnramp("pk_test_51QTPvkLBjn9Sr3YQ7hPQIq2ld9D4B1YjSHn7gKmV6OezmJ0odbm1elIBDd4X3NuUmIiuEwZxnJ8VeXLZgTfaXk3D00HiguOu3l");
+
+export default function App() {
+  const [clientSecret, setClientSecret] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    // Fetches an onramp session and captures the client secret
+    fetch(
+      "/create-onramp-session",
+      {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        transaction_details: {
+          destination_currency: "usdc",
+          destination_exchange_amount: "13.37",
+          destination_network: "ethereum",
+        }
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => setClientSecret(data.clientSecret));
+  }, []);
+
+  const onChange = React.useCallback(({ session }) => {
+    setMessage(`OnrampSession is now in ${session.status} state.`);
+  }, []);
+
+  return (
+    <div className="App">
+      <CryptoElements stripeOnramp={stripeOnrampPromise}>
+        {clientSecret && (
+          <OnrampElement
+            id="onramp-element"
+            clientSecret={clientSecret}
+            appearance={{ theme: "dark" }}
+            onChange={onChange}
+          />
+        )}
+      </CryptoElements>
+      {message && <div id="onramp-message">{message}</div>}
+    </div>
+  );
+}
+
+//StripeCryptoElement.jsx
+
+import React from 'react';
+
+// ReactContext to simplify access of StripeOnramp object
+const CryptoElementsContext =
+  React.createContext(null);
+CryptoElementsContext.displayName = 'CryptoElementsContext';
+
+export const CryptoElements = ({
+  stripeOnramp,
+  children,
+}) => {
+  const [ctx, setContext] = React.useState(() => ({
+    onramp: null,
+  }));
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    Promise.resolve(stripeOnramp).then((onramp) => {
+      if (onramp && isMounted) {
+        setContext((ctx) => (ctx.onramp ? ctx : { onramp }));
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [stripeOnramp]);
+
+  return (
+    <CryptoElementsContext.Provider value={ctx}>
+      {children}
+    </CryptoElementsContext.Provider>
+  );
+};
+
+// React hook to get StripeOnramp from context
+export const useStripeOnramp = () => {
+  const context = React.useContext(CryptoElementsContext);
+  return context?.onramp;
+};
+
+// React element to render Onramp UI
+const useOnrampSessionListener = (
+  type,
+  session,
+  callback
+) => {
+  React.useEffect(() => {
+    if (session && callback) {
+      const listener = (e) => callback(e.payload);
+      session.addEventListener(type, listener);
+      return () => {
+        session.removeEventListener(type, listener);
+      };
+    }
+    return () => {};
+  }, [session, callback, type]);
+};
+
+export const OnrampElement = ({
+  clientSecret,
+  appearance,
+  onReady,
+  onChange,
+  ...props
+}) => {
+  const stripeOnramp = useStripeOnramp();
+  const onrampElementRef = React.useRef(null);
+  const [session, setSession] = React.useState();
+
+  const appearanceJSON = JSON.stringify(appearance);
+  React.useEffect(() => {
+    const containerRef = onrampElementRef.current;
+    if (containerRef) {
+      // NB: ideally we want to be able to hot swap/update onramp iframe
+      // This currently results a flash if one needs to mint a new session when they need to udpate fixed transaction details
+      containerRef.innerHTML = '';
+
+      if (clientSecret && stripeOnramp) {
+        setSession(
+          stripeOnramp
+            .createSession({
+              clientSecret,
+              appearance: appearanceJSON ? JSON.parse(appearanceJSON) : {}
+            })
+            .mount(containerRef)
+        );
+      }
+    }
+  }, [appearanceJSON, clientSecret, stripeOnramp]);
+
+  useOnrampSessionListener('onramp_ui_loaded', session, onReady);
+  useOnrampSessionListener('onramp_session_updated', session, onChange);
+
+  return <div {...props} ref={onrampElementRef}></div>;
+};
