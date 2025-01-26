@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { env } from "@/env";
+import { useUser } from "@account-kit/react";
+import { useToast } from "@/components/ui/use-toast";
 
 // Make sure to call loadStripeOnramp outside of a component's render
 const stripeOnrampPromise = loadStripeOnramp(
@@ -17,8 +19,17 @@ export function CryptoOnramp() {
   const [clientSecret, setClientSecret] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const user = useUser();
+  const { toast } = useToast();
 
   const initializeOnrampSession = async () => {
+    if (!user?.address) {
+      toast({
+        title: "Please login to continue",
+        description: "You must be logged in to purchase crypto",
+      });
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch("/api/crypto-onramp", {
@@ -29,7 +40,7 @@ export function CryptoOnramp() {
             destination_currency: "usdc",
             destination_exchange_amount: "13.37",
             destination_network: "ethereum",
-            wallet_address: "0x1107A5a773ac7253c12f2D79F5d981C23DA147AC",
+            wallet_address: user?.address,
           },
         }),
       });
