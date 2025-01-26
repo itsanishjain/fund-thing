@@ -10,12 +10,13 @@ import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | willi",
-    default: "willi",
+    template: "%s | Fund Thing",
+    default: "Fund Thing",
   },
-  description: "willi, you gonna die so let's fix your cryoto",
-  metadataBase: new URL("https://willi.com"),
+  description: "Fund Thing - Secure your crypto assets for the future",
+  metadataBase: new URL("https://fund.com"),
 };
+
 export default function RootLayout({
   children,
 }: {
