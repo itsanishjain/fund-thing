@@ -5,8 +5,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-12-18.acacia",
 });
 
+interface OnrampSessionResponse {
+  client_secret: string;
+  [key: string]: any;
+}
+
 const OnrampSessionResource = Stripe.StripeResource.extend({
-  create: Stripe.StripeResource.method({
+  create: Stripe.StripeResource.method<OnrampSessionResponse>({
     method: "POST",
     path: "crypto/onramp_sessions",
   }),

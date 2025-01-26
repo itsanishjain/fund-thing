@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { loadStripeOnramp } from "@stripe/crypto";
 import { CryptoElements, OnrampElement } from "./StripeCryptoElements";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-// import { Icons } from "@/components/ui/icons";
+import { Loader2 } from "lucide-react";
 
 // Make sure to call loadStripeOnramp outside of a component's render
 const stripeOnrampPromise = loadStripeOnramp(
@@ -57,7 +57,7 @@ export function CryptoOnramp() {
             disabled={loading}
             className="w-full"
           >
-            {loading && "Loading..."}
+            {loading && <Loader2 className="w-4 h-4 animate-spin" />}
             Start Purchase
           </Button>
         ) : (

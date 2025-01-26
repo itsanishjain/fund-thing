@@ -1,13 +1,40 @@
 "use client";
 
 import React from "react";
+import type { OnrampAppearanceOptions, StripeOnramp } from "@stripe/crypto";
+
+interface StripeOnrampSession {
+  mount: (element: HTMLElement) => StripeOnrampSession;
+  addEventListener: (
+    event: string,
+    listener: (event: { payload: any }) => void
+  ) => void;
+  removeEventListener: (
+    event: string,
+    listener: (event: { payload: any }) => void
+  ) => void;
+}
+
+interface CryptoElementsContextType {
+  onramp: StripeOnramp | null;
+}
 
 // ReactContext to simplify access of StripeOnramp object
-const CryptoElementsContext = React.createContext(null);
+const CryptoElementsContext = React.createContext<CryptoElementsContextType>({
+  onramp: null,
+});
 CryptoElementsContext.displayName = "CryptoElementsContext";
 
-export const CryptoElements = ({ stripeOnramp, children }) => {
-  const [ctx, setContext] = React.useState(() => ({
+interface CryptoElementsProps {
+  stripeOnramp: Promise<StripeOnramp | null>;
+  children: React.ReactNode;
+}
+
+export const CryptoElements: React.FC<CryptoElementsProps> = ({
+  stripeOnramp,
+  children,
+}) => {
+  const [ctx, setContext] = React.useState<CryptoElementsContextType>(() => ({
     onramp: null,
   }));
 
@@ -33,20 +60,24 @@ export const CryptoElements = ({ stripeOnramp, children }) => {
 };
 
 // React hook to get StripeOnramp from context
-export const useStripeOnramp = () => {
+export const useStripeOnramp = (): StripeOnramp | null => {
   const context = React.useContext(CryptoElementsContext);
-  return context?.onramp;
+  return context.onramp;
 };
+
+interface OnrampSessionEvent {
+  payload: any;
+}
 
 // React element to render Onramp UI
 const useOnrampSessionListener = (
   type: string,
-  session: any,
-  callback: any
+  session: StripeOnrampSession | undefined,
+  callback: (payload: any) => void
 ) => {
   React.useEffect(() => {
     if (session && callback) {
-      const listener = (e) => callback(e.payload);
+      const listener = (e: OnrampSessionEvent) => callback(e.payload);
       session.addEventListener(type, listener);
       return () => {
         session.removeEventListener(type, listener);
@@ -56,23 +87,23 @@ const useOnrampSessionListener = (
   }, [session, callback, type]);
 };
 
-interface OnrampElementProps {
+interface OnrampElementProps extends React.HTMLAttributes<HTMLDivElement> {
   clientSecret: string;
-  appearance: any;
+  appearance: OnrampAppearanceOptions;
   onReady: () => void;
-  onChange: (e: any) => void;
+  onChange: (event: any) => void;
 }
 
-export const OnrampElement = ({
+export const OnrampElement: React.FC<OnrampElementProps> = ({
   clientSecret,
   appearance,
   onReady,
   onChange,
   ...props
-}: OnrampElementProps) => {
+}) => {
   const stripeOnramp = useStripeOnramp();
-  const onrampElementRef = React.useRef(null);
-  const [session, setSession] = React.useState();
+  const onrampElementRef = React.useRef<HTMLDivElement>(null);
+  const [session, setSession] = React.useState<StripeOnrampSession>();
 
   const appearanceJSON = JSON.stringify(appearance);
   React.useEffect(() => {
