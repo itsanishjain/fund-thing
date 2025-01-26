@@ -1,5 +1,5 @@
 import "../globals.css";
-import { inter } from "@/app/lib/fonts";
+import { poppins } from "@/app/lib/fonts";
 import { Metadata } from "next";
 import Progress from "./progress";
 import { Providers } from "./providers";
@@ -29,7 +29,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${poppins.className} antialiased`}>
         <Providers initialState={initialState}>
           <Progress />
           <div className="flex h-screen flex-col">
