@@ -1,1 +1,0 @@
-ALTER TABLE "accounts" ADD COLUMN "uid" uuid DEFAULT gen_random_uuid();

@@ -1,1 +1,0 @@
-ALTER TABLE "beneficiaries" ADD COLUMN "status" boolean DEFAULT false;

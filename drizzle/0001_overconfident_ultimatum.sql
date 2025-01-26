@@ -1,1 +1,0 @@
-ALTER TABLE "beneficiaries" DROP CONSTRAINT "beneficiaries_accountWalletAddress_accounts_wallet_address_fk";
