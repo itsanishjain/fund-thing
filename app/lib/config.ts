@@ -1,8 +1,9 @@
 import { AlchemyAccountsUIConfig, createConfig } from "@account-kit/react";
 import { alchemy, arbitrumSepolia } from "@account-kit/infra";
 import { QueryClient } from "@tanstack/react-query";
+import { env } from "@/env";
 
-const alchemyApiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "";
+const alchemyApiKey = env.NEXT_PUBLIC_ALCHEMY_API_KEY ?? "";
 
 const uiConfig: AlchemyAccountsUIConfig = {
   illustrationStyle: "outline",
@@ -25,7 +26,7 @@ export const config = createConfig(
     chain: arbitrumSepolia,
     ssr: false, // set to false if you're not using server-side rendering
     enablePopupOauth: true,
-    policyId: process.env.NEXT_PUBLIC_POLICY_ID!,
+    policyId: env.NEXT_PUBLIC_POLICY_ID,
   },
   uiConfig
 );
