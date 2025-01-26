@@ -6,10 +6,11 @@ import { CryptoElements, OnrampElement } from "./StripeCryptoElements";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { env } from "@/env";
 
 // Make sure to call loadStripeOnramp outside of a component's render
 const stripeOnrampPromise = loadStripeOnramp(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+  env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 );
 
 export function CryptoOnramp() {

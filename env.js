@@ -8,9 +8,10 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
-    RESEND_API_KEY: z.string(),
     NEXT_PUBLIC_ALCHEMY_API_KEY: z.string(),
     NEXT_PUBLIC_POLICY_ID: z.string(),
+    STRIPE_SECRET_KEY: z.string(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -32,7 +33,9 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
-    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
+      process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_ALCHEMY_API_KEY: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
     NEXT_PUBLIC_POLICY_ID: process.env.NEXT_PUBLIC_POLICY_ID,
   },
