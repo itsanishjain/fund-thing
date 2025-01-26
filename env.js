@@ -8,10 +8,7 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
-    NEXT_PUBLIC_ALCHEMY_API_KEY: z.string(),
-    NEXT_PUBLIC_POLICY_ID: z.string(),
     STRIPE_SECRET_KEY: z.string(),
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -23,7 +20,9 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    NEXT_PUBLIC_ALCHEMY_API_KEY: z.string(),
+    NEXT_PUBLIC_POLICY_ID: z.string(),
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
   },
 
   /**
