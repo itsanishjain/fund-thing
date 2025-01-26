@@ -20,6 +20,7 @@ This project demonstrates how to integrate Stripe's Crypto On-ramp solution with
 2. Configure environment variables:
    - Copy `.env.example` to `.env`
    - Fill in your Stripe API keys
+    [stripe docs](https://docs.stripe.com/crypto/onramp/embeddable-onramp-quickstart)
    - Add your Alchemy API key and Policy ID
    - Set your database URL if using PostgreSQL
 
