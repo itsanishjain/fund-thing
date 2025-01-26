@@ -34,7 +34,7 @@ export default function BuyCryptoPage() {
   return (
     <div className="container max-w-5xl py-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Buy Crypto</h1>
+        <h1 className="text-2xl font-bold">fund thing</h1>
         <Button onClick={handleLogout} disabled={isLoggingOut}>
           {isLoggingOut ? (
             <Loader2 className="h-4 w-4 animate-spin mr-2" />
